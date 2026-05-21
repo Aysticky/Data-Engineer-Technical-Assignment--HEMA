@@ -84,6 +84,10 @@ class GoldSales:
         
         return sales_df
     
+    def generate_sales_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
+        # Alias for transform_to_sales() to match test expectations
+        return self.transform_to_sales(df)
+    
     def write_gold_sales(self, df: pd.DataFrame, output_path: str):
        
         logger.info(f"Writing gold sales data to {output_path}")
@@ -158,7 +162,11 @@ class GoldSales:
         start_time = datetime.now()
         
         try:
-            if self.use_local:
+            # Use pre-set paths if available (for testing), otherwise use config
+            if hasattr(self, 'input_path') and hasattr(self, 'output_path'):
+                input_path = self.input_path
+                output_path = self.output_path
+            elif self.use_local:
                 input_path = Config.get_local_output_path('silver')
                 output_path = Config.get_local_output_path('gold', 'sales')
             else:

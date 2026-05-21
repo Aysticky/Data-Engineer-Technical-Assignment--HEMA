@@ -57,10 +57,14 @@ env/
 logs/
 
 # Data files (uncomment if you don't want to track data)
-# *.csv
-# *.parquet
+*.csv
+*.parquet
 # *.json
 # data/
+
+data/bronze
+data/gold
+data/silver
 
 # Testing
 .pytest_cache/

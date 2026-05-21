@@ -2,7 +2,7 @@ import logging
 import json
 import sys
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 
@@ -38,7 +38,7 @@ class StructuredLogger:
     def _log(self, level: str, message: str, extra: Optional[Dict[str, Any]] = None):
         
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "message": message,
             "logger_name": self.logger.name

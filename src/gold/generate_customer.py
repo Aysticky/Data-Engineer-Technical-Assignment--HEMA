@@ -105,8 +105,7 @@ class GoldCustomer:
             'customer_first_name': 'first',
             'customer_last_name': 'first',
             'segment': 'first',
-            'country': 'first',
-            'order_date': 'max'  # Keep latest order date for partitioning
+            'country': 'first'
         }).reset_index()
         
         # Merge all metrics
@@ -120,6 +119,18 @@ class GoldCustomer:
         
         # Rename segment column
         customer_df = customer_df.rename(columns={'segment': 'customer_segment'})
+        
+        # Select final columns in the correct order
+        customer_df = customer_df[[
+            'customer_id',
+            'customer_first_name',
+            'customer_last_name',
+            'customer_segment',
+            'country',
+            'orders_last_month',
+            'orders_last_6_months',
+            'orders_total'
+        ]]
         
         logger.info(
             "Order metrics calculated",
@@ -137,20 +148,14 @@ class GoldCustomer:
        
         logger.info("transforming to customer dataset")
         
+        # Calculate customer metrics
         customer_df = self.calculate_order_metrics(df)
         
-        # Select and order columns as required
-        customer_df = customer_df[[
-            'customer_id',
-            'customer_first_name',
-            'customer_last_name',
-            'customer_segment',
-            'country',
-            'orders_last_month',
-            'orders_last_6_months',
-            'orders_total',
-            'order_date'  # Keep for partitioning
-        ]]
+        # Get the latest order date for each customer for partitioning
+        latest_order_dates = df.groupby('customer_id')['order_date'].max().reset_index()
+        
+        # Merge with customer data
+        customer_df = customer_df.merge(latest_order_dates, on='customer_id', how='left')
         
         logger.info(
             "Customer transformation completed",
@@ -158,6 +163,10 @@ class GoldCustomer:
         )
         
         return customer_df
+    
+    def generate_customer_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
+        # Alias for calculate_order_metrics() to match test expectations
+        return self.calculate_order_metrics(df)
     
     def write_gold_customer(self, df: pd.DataFrame, output_path: str):
         
@@ -233,7 +242,11 @@ class GoldCustomer:
         start_time = datetime.now()
         
         try:
-            if self.use_local:
+            # Use pre-set paths if available (for testing), otherwise use config
+            if hasattr(self, 'input_path') and hasattr(self, 'output_path'):
+                input_path = self.input_path
+                output_path = self.output_path
+            elif self.use_local:
                 input_path = Config.get_local_output_path('silver')
                 output_path = Config.get_local_output_path('gold', 'customer')
             else:

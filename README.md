@@ -15,6 +15,7 @@ The solution implements a scalable, maintainable data pipeline using AWS service
 
 ### Pipeline Architecture
 ![Architecture Diagram](architecture.png)
+
 *Figure 1: Data Pipeline Architecture - Medallion structure with Bronze, Silver, and Gold layers*
 
 ## Implementation Approach
